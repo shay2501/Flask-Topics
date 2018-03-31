@@ -141,9 +141,24 @@ def upvote(topic_id):
     if not g.user:
         return redirect('/')
 
-    return
+    if user_already_voted(topic_id):
+        return redirect('/')
 
-def user_already_voted()
+
+    result = query_db('''select votes from topic where id = ?''', [topic_id], one=True)
+    current_votes = result['votes']
+    current_votes += 1
+
+    db=get_db()
+    db.execute('''update topic set votes = ? where id = ?''', [current_votes, topic_id])
+    db.execute('''insert into user_topic (user_id, topic_id) values(?,?)''', [session['user_id'], topic_id])
+    db.commit()
+
+    return redirect('/')
+
+def user_already_voted(topic_id):
+    return query_db('''select * from user_topic where user_id = ? and topic_id = ?
+    ''', [session['user_id'], topic_id])
 # TODO down vote
 
 
