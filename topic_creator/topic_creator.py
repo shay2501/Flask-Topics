@@ -105,21 +105,45 @@ def all_topics():
 # TODO
 @app.route('/add_topic', methods=['GET', 'POST'])
 def add_topic():
-    return
+    if not g.user:
+        redirect('/')
+    if request.method == "POST":
+        description = request.form['description']
+        if not description:
+            return render_template('add_topic.html', error='Description is required!')
+        db = get_db()
+        db.execute('''insert into topic (author_id, description, post_date) values(?, ?, ?)
+        ''', [session['user_id'], description, int(time.time())])
+        db.commit()
+        return redirect('/topics')
+    else:
+        return render_template('add_topic.html')
+
 
 
 # TODO
 @app.route('/topics')
 def topics():
-    return
+    #need render template
+
+    if not g.user:
+        return redirect('/')
+
+    topics = query_db('''
+        select * from topic where author_id = ? order by post_date 
+    ''', [session['user_id']])
+    return render_template('topics.html', topics=topics)
 
 
 # TODO
 @app.route('/upvote/<topic_id>')
 def upvote(topic_id):
+    if not g.user:
+        return redirect('/')
+
     return
 
-
+def user_already_voted()
 # TODO down vote
 
 
